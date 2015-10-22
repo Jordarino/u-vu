@@ -1,0 +1,350 @@
+﻿@{
+    ViewBag.Title = "U-VU";
+}
+<div id="editor" oncontextmenu="return false;"></div>
+<div id="logo"></div>
+<div id="nav">
+    <ul>
+        <li>
+            <a class="drop-menu-button">Town Search</a>
+            <div class="drop-menu">
+                <div style="padding:20px;">
+                    <img src="~/Content/icons/search-3-24.png" class="icon" />
+                    <h2>Search Towns</h2>
+                    <input type="text" id="townSearch" />
+                    <div id="results">
+
+                    </div>
+                </div>
+            </div>
+        </li>
+        <li>
+            <a class="drop-menu-button">Key</a>
+            <div class="drop-menu">
+                <img src="~/Content/images/key.png" />
+            </div>
+        </li>
+        <li><a>About Us</a></li>
+        <li><a>Contact</a></li>
+        <li><a>Journey Planner</a></li>
+    </ul>
+</div>
+
+<div id="infoPopup">
+    <div class="closeIcon"></div>
+    <div class="scroll mainInfo">
+
+    </div>
+</div>
+
+@section scripts {
+    <script src="/Scripts/jquery-ui-touch-punch.js"></script>
+    <script src="/Scripts/jquery.mousewheel.js"></script>
+    <script src="/Scripts/jquery.svg-pan-zoom.js"></script>
+    <script src="/Scripts/handlebars.min.js"></script>
+    <script src="/Scripts/handlebars.extensions.js"></script>
+    <script src="/Scripts/site.js"></script>
+
+    <script>
+        (function() {
+            var planSVG,
+                fixedPort,
+                editor,
+                mainGroup,
+                scaleGroup,
+                townGroup,
+                planImageGroup,
+                planData,
+                infoPopup,
+                templates = {};
+
+
+            var xmlns = {
+                ns: 'http://www.w3.org/2000/svg',
+                link: 'http://www.w3.org/1999/xlink'
+            }
+
+            var wireEvents = function () {
+                editor = $('#editor');
+                setLayout();
+                $(window).resize(setLayout);
+                editor.load('/Content/SVGData/Borders.svg', null, setupForm);
+                infoPopup = $('#infoPopup');
+                infoPopup.find('.closeIcon').click(function () { infoPopup.hide(); })
+                templates.infoTemplate = Handlebars.compile($.trim($('#infoTemplate').html())); 
+                templates.cubInfoTemplate = Handlebars.compile($.trim($('#cubInfoTemplate').html())); 
+                templates.railInfoTemplate = Handlebars.compile($.trim($('#railInfoTemplate').html()));
+                $('#townSearch').keyup(searchTowns);
+                $('#results').on('click', 'div', function () { gotoTown($(this).data('node')); });
+            }
+
+            var searchTowns = function (e) {
+                var string = $(this).val();
+                var found = $('#townGroup text:containsIN("' + string + '")');
+                $('#results').empty();
+                if (found.length > 0) {
+                    if (e.which == 13) {
+                        console.log($(found[0]));
+                        gotoTown($(found[0]));
+                    } else {
+                        $.each(found, function (i, el) {
+                            var result = $('<div/>').text($(el).text()).data('node',el);
+                            $('#results').append(result);
+                        });
+                    }
+                }
+                
+            }
+
+            var gotoTown = function (found) {
+                var zoom = 4;
+                var transform = { e: -($(found).data('x')) * zoom, f: -($(found).data('y')) * zoom }
+                transform.e = transform.e + ($(document).width() / 2);
+                transform.f = transform.f + ($(document).height() / 2);
+                planSVG.pxSVGPanZoom("zoomTo", { offset: { x: transform.e, y: transform.f }, zoom: zoom });
+            }
+            
+            var setupForm = function (e) {
+                planSVG = editor.find('svg');
+
+                mainGroup = document.createElementNS(xmlns.ns, "g"); // THIS IS FOR PANNING AND SCALING
+                mainGroup.setAttribute('id', 'viewport');
+                planSVG.append(mainGroup);
+
+                $(mainGroup).append(planSVG.find('g[id]'));   
+
+                //<image x="10" y="20" width="80" height="80" xlink:href="recursion.svg" />
+                //var cubs = document.createElementNS(xmlns.ns, "image");
+                //cubs.setAttribute("x", 0);
+                //cubs.setAttribute("y", 0);
+                //cubs.setAttribute("width", 6104);
+                //cubs.setAttribute("height", 7538);
+                //cubs.setAttributeNS(xmlns.link, "href", "/Content/SVGData/YellowCubs.svg");
+                //planSVG.find('#Boundaries')[0].appendChild(cubs);
+
+                fixedPort = document.createElementNS(xmlns.ns, "g") // THIS IS FOR OBJECT WE DON'T WANT SCALED
+                fixedPort.setAttribute('id', 'fixedPort');
+                planSVG.append(fixedPort);
+
+                townGroup = document.createElementNS(xmlns.ns, "g"); // THIS IS FOR PANNING AND SCALING
+                townGroup.setAttribute('id', 'townGroup');
+                $(mainGroup).find('#Yellow_Cubs').after(townGroup);
+
+                routeGroup = document.createElementNS(xmlns.ns, "g"); // THIS IS FOR PANNING AND SCALING
+                routeGroup.setAttribute('id', 'routeGroup');
+                $(mainGroup).find('#Yellow_Cubs').after(routeGroup);
+
+
+                planSVG.pxSVGPanZoom({ onClick: mainPlanClick });
+                planSVG.pxSVGPanZoom("zoomTo", { offset: { x: 226, y: -2492 }, zoom: 0.5 });
+
+                $('#Yellow_Cubs polygon, #Yellow_Cubs path').click(function () {
+                    var id = $(this).data('id');
+                    var cub = $.grep(cubData, function (e) { return e.cubId == id; });
+                    openPopup(templates.cubInfoTemplate(cub[0]));
+                });
+                $('#Rail_Numbers text[data-number]').click(function() {
+                    var number = $(this).data('number');
+                    var rail = $.grep(railData, function (e) { return e.number == number; });
+                    openPopup(templates.railInfoTemplate(rail[0]));
+                })
+
+                loadPlan();
+
+            }
+
+            var mainPlanClick = function () {
+                infoPopup.hide();
+            }
+
+            // Resize editor area to fit window
+            var setLayout = function() {
+                editor.css('height', window.innerHeight - editor.offset().top);
+            }
+
+            var loadPlan = function () {
+                $.ajax('api/routes/gettowns/', { type: "GET" })
+                    .done(drawTowns)
+                    .error(function (jq, text, error) { alert('Error loading plan'); })
+                $.ajax('/api/routes/getroutes', { type: "GET" })
+                    .done(drawRoutes)
+                    .error(function (jq, text, error) { alert('Jordan made me do it'); })
+            }
+
+            var drawRoutes = function (data) {
+                $.each(data, function (i, e) {
+                    var route = document.createElementNS(xmlns.ns, "g");
+                    route.setAttribute('class', "route");
+                    $(route).data('routeData', e);
+                    $.each(e.RoutePaths, function (j, routePath) {
+                        switch (routePath.type) {
+                            case "path":
+                                var RoutePathSvg = document.createElementNS(xmlns.ns, 'path');
+                                RoutePathSvg.setAttribute('d', routePath.path)
+                                
+                                break;
+                            case "polyline":
+                                var RoutePathSvg = document.createElementNS(xmlns.ns, 'polyline');
+                                RoutePathSvg.setAttribute('points', routePath.path)
+                                break;
+
+                            case "line":
+                                var RoutePathSvg = document.createElementNS(xmlns.ns, 'line');
+                                var points = routePath.path.split(' ');
+                                RoutePathSvg.setAttribute('x1', points[0].split(',')[0]);
+                                RoutePathSvg.setAttribute('y1', points[0].split(',')[1]);
+                                RoutePathSvg.setAttribute('x2', points[1].split(',')[0]);
+                                RoutePathSvg.setAttribute('y2', points[1].split(',')[1]);
+                                break;
+                        }
+                        RoutePathSvg.setAttribute('stroke-width', routePath.weight)
+                        RoutePathSvg.setAttribute('fill', 'none');
+                        RoutePathSvg.setAttribute('stroke', '#' + e.operatorItem.colour);
+                        //RoutePathSvg.setAttribute('class', "route");
+                        route.appendChild(RoutePathSvg);
+                    })
+
+
+                    $.each(e.RouteNumbers, function (j, routenumber) {
+                        var textNode = document.createTextNode(routenumber.number);
+                        var RouteNumberSvg = document.createElementNS(xmlns.ns, 'text');
+                        RouteNumberSvg.setAttribute('transform', 'matrix(1 0 0 1 ' + routenumber.x + ' ' + routenumber.y + ')')
+                        //RouteNumberSvg.setAttribute('class', "route");
+                        RouteNumberSvg.appendChild(textNode);
+                        route.appendChild(RouteNumberSvg);
+
+                    })
+
+                    routeGroup.appendChild(route);
+                });
+
+                editor.find('.route').mouseenter(function () {
+                    var group = $(this).closest('g');
+                    group[0].setAttribute('class', 'route over');
+                    $(routeGroup).append(group);
+                }).mouseleave(function () {
+                    var group = $(this).closest('g');
+                    group[0].setAttribute('class', 'route');
+                }).click(function () {
+                    var group = $(this).closest('g');
+                    var data = $(group).data('routeData');
+                    openPopup(templates.infoTemplate(data));
+                })
+
+            }
+
+            var openPopup = function (displayData) {
+                
+                infoPopup.find('.mainInfo').html(displayData)
+                infoPopup.find('iframe').load(function () {
+                    infoPopup.find('iframe').show();
+                    infoPopup.find('.loading').hide();
+                })
+                infoPopup.showPopup();
+
+                infoPopup.find('.btnChange').click(function () {
+                    $(this).hide();
+                    if ($(this).hasClass('btnAll')) infoPopup.find('.btnMain').show();
+                    else infoPopup.find('.btnAll').show();
+                    infoPopup.find('.loading').show();
+                    infoPopup.find('iframe').hide();
+                    infoPopup.find('iframe').attr('src', $(this).data('url'));
+                });
+            }
+
+            var drawTowns = function(data) {
+
+                $.each(data, function (i, e) {
+
+                    var town = document.createElementNS(xmlns.ns, "g");
+                    town.setAttribute('class', "town");
+
+                    var TownCircleSvg = document.createElementNS(xmlns.ns,'circle');
+                    TownCircleSvg.setAttribute('cx', e.location.split(' ')[0])
+                    TownCircleSvg.setAttribute('cy', e.location.split(' ')[1])
+                    TownCircleSvg.setAttribute('r', e.size)
+                    town.appendChild(TownCircleSvg);
+
+                    var TownNameSvg = document.createElementNS(xmlns.ns, 'text');
+                    TownNameSvg.setAttribute('transform', 'matrix(1 0 0 1 ' + e.townNameLocation + ')')
+                    TownNameSvg.setAttribute('font-size', 3 + e.size)
+                    TownNameSvg.setAttribute('data-x', e.location.split(' ')[0])
+                    TownNameSvg.setAttribute('data-y', e.location.split(' ')[1])
+                    var textNode = document.createTextNode(e.townName);
+                    TownNameSvg.appendChild(textNode);
+                    town.appendChild(TownNameSvg);
+
+                    townGroup.appendChild(town);
+
+                    //<circle fill="#AFAFAF" cx="2654.93" cy="5752.81" r="1.75"/>
+                    //<text transform="matrix(1 0 0 1 2630.3809 5756.3867)" fill="#AFAFAF" font-family="'ArialMT'" font-size="6.0001">Holnest</text>
+
+                })
+            }
+
+            $(function () {
+                wireEvents();
+            })
+
+            var cubData = [
+                { "cubId": 1, "cityName": "Plymouth", "pdfUrl": "http://assets.goaheadbus.com/media/cms_page_media/678/AW%20310315%20DD%2015-024%20CITYBUS%20SHOP%20MAP%20MARCH%202015.pdf", "webSite":"https://www.plymouthbus.co.uk/timetables/", "twitter":"https://twitter.com/plymouthbus" },
+                { "cubId": 2, "cityName": "Exeter", "pdfUrl": "https://www.stagecoachbus.com/uploads/exetermap.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
+                { "cubId": 3, "cityName": "Torbay", "pdfUrl": "https://www.stagecoachbus.com/uploads/torbaymap.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
+                { "cubId": 4, "cityName": "Taunton", "pdfUrl": "http://www.busesofsomerset.co.uk/pdfs/maps/tauntonapr15.pdf", "webSite": "http://www.busesofsomerset.co.uk/timetables.shtml", "twitter": "https://twitter.com/FirstKernow" },
+                { "cubId": 5, "cityName": "Yoevil", "pdfUrl": "", "webSite": "", "twitter": "" },
+                { "cubId": 6, "cityName": "Weymouth", "pdfUrl": "", "webSite": "", "twitter": "" },
+            ];
+
+            var railData = [
+                { "cubId": 1, "number": "135", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20135.pdf" },
+                { "cubId": 2, "number": "136", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20136.pdf" },
+                { "cubId": 3, "number": "139", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20139.pdf" },
+                { "cubId": 4, "number": "140", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20140.pdf" },
+                { "cubId": 5, "number": "142", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20142.pdf" },
+                { "cubId": 6, "number": "143", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20143.pdf" },
+                { "cubId": 7, "number": "144", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20144.pdf" },
+                { "cubId": 8, "number": "160", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20160.pdf" }
+            ];
+
+       }())
+
+    </script>
+
+    <script type="text/x-handlebars" id="railInfoTemplate">
+        <h1>Rail Number {{number}}</h1>
+        <div class="scroll">
+            {{#unless pdfUrl}}Sorry, no timetable for this area yet! :-({{/unless}}
+            {{#if pdfUrl}}<span class="loading"></span>{{/if}}
+            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;"></iframe>
+        </div>
+    </script>
+
+    <script type="text/x-handlebars" id="cubInfoTemplate">
+        <h1>{{cityName}}</h1>
+        <div {{bindData this}} class="buttonBar">
+            {{#if twitter}}<a href="{{twitter}}" target="_blank" class="button"><img src="/Content/icons/twitter-icon.png"></a>{{/if}}
+            {{#if webSite}}<a href="{{webSite}}" target="_blank" class="button"><img src="/Content/icons/website-icon.png"></a>{{/if}}
+        </div>
+        <div class="scroll">
+            {{#unless pdfUrl}}Sorry, no timetable for this area yet! :-({{/unless}}
+            {{#if pdfUrl}}<span class="loading"></span>{{/if}}
+            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;"></iframe>
+        </div>
+    </script>
+
+    <script type="text/x-handlebars" id="infoTemplate">
+        <h1>{{operatorItem.name}}</h1> 
+        
+        <div {{bindData this}} class="buttonBar">
+            <a data-url="{{allStopsUrl}}" class="button btnChange btnAll">All Stops</a> 
+            <a data-url="{{timingPointsUrl}}" class="button btnChange btnMain" style="display:none;">Main Stops</a>
+            {{#if operatorItem.twitter}}<a href="{{operatorItem.twitter}}" target="_blank" class="button"><img src="/Content/icons/twitter-icon.png"></a>{{/if}}
+        </div>
+        <div class="scroll">
+            {{#unless allStopsUrl}}Sorry, no timetable for this route yet! :-({{/unless}}
+            {{#if allStopsUrl}}<span class="loading"></span>{{/if}}
+            <iframe src="{{timingPointsUrl}}" style="width:100%;height:100%;"></iframe>
+        </div>
+    </script>
+
+}
