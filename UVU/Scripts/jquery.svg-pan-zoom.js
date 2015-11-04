@@ -1,14 +1,19 @@
 ﻿(function ($) {
 
+    var settings = {};
+
     var methods = {
         init: function (options) {
 
-            var settings = $.extend({
+            settings = $.extend({
                 enablePan: true,
                 enableZoom: true,
                 onDragging: null,
                 onDragEnd: null,
-                initialZoom: 1
+                onZoom : null,
+                initialZoom: 1,
+                min: 0.2,
+                max: 20
             }, options);
 
             return this.each(function (i, e) {
@@ -67,7 +72,6 @@
 
                 var mouseUp = function (e) {
                     e.preventDefault();
-                    console.log('up?');
                     state = '';
                     if (settings.onDragEnd) settings.onDragEnd();
                     return false;
@@ -89,12 +93,17 @@
                     p = getEventPoint(e);
                     p = p.matrixTransform(g.getCTM().inverse());
 
+                    var currentZoom = g.getCTM().a;
+
+                    if ((currentZoom > settings.max && delta>0) || (currentZoom < settings.min && delta<0)) return;
+
+
                     var k = root[0].createSVGMatrix().translate(p.x, p.y).scale(z).translate(-p.x, -p.y);
-
                     setCTM(g.getCTM().multiply(k));
-
                     if (typeof (stateTf) == "undefined") stateTf = g.getCTM().inverse();
                     stateTf = stateTf.multiply(k.inverse());
+
+                    if (settings.onZoom) settings.onZoom(g.getCTM().a);
                 }
 
                 var setCTM = function (matrix) {
@@ -128,6 +137,7 @@
             var root = $(this);
             var z = options.zoom;
             root.find('#viewport')[0].setAttributeNS(null, "transform", "matrix(" + z + ",0,0," + z + "," + options.offset.x + "," + options.offset.y + ")");
+            if (settings.onZoom) settings.onZoom(z);
         }
 
     }
