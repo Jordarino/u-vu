@@ -84,7 +84,6 @@
                 $('#results').empty();
                 if (found.length > 0) {
                     if (e.which == 13) {
-                        console.log($(found[0]));
                         gotoTown($(found[0]));
                     } else {
                         $.each(found, function (i, el) {
@@ -104,6 +103,15 @@
                 planSVG.pxSVGPanZoom("zoomTo", { offset: { x: transform.e, y: transform.f }, zoom: zoom });
             }
             
+            var onZoom = function (zoomLevel) {
+                //console.log(zoomLevel);
+                if (zoomLevel < 1.2) {
+                    $(townGroup).hide();
+                } else {
+                    $(townGroup).show();
+                }
+            }
+
             var setupForm = function (e) {
                 planSVG = editor.find('svg');
 
@@ -135,7 +143,7 @@
                 $(mainGroup).find('#Yellow_Cubs').after(routeGroup);
 
 
-                planSVG.pxSVGPanZoom({ onClick: mainPlanClick });
+                planSVG.pxSVGPanZoom({ onClick: mainPlanClick, onZoom: onZoom, min:0.5, max: 6.5 });
                 planSVG.pxSVGPanZoom("zoomTo", { offset: { x: 226, y: -2492 }, zoom: 0.5 });
 
                 $('#Yellow_Cubs polygon, #Yellow_Cubs path').click(function () {
@@ -218,18 +226,38 @@
                     routeGroup.appendChild(route);
                 });
 
-                editor.find('.route').mouseenter(function () {
-                    var group = $(this).closest('g');
-                    group[0].setAttribute('class', 'route over');
-                    $(routeGroup).append(group);
-                }).mouseleave(function () {
-                    var group = $(this).closest('g');
-                    group[0].setAttribute('class', 'route');
-                }).click(function () {
-                    var group = $(this).closest('g');
-                    var data = $(group).data('routeData');
-                    openPopup(templates.infoTemplate(data));
-                })
+                //editor.find('.route')
+
+                editor.find('.route')
+                    .on('mouseenter', 'polyline, path, line, text', function () {
+                        var group = $(this).closest('g');
+                        group[0].setAttribute('class', 'route over');
+                    })
+                    .on('mouseleave', 'polyline, path, line, text', function () {
+                        var group = $(this).closest('g');
+                        group[0].setAttribute('class', 'route');
+                    })
+                    .click(function () {
+                        var group = $(this).closest('g');
+                        var data = $(group).data('routeData');
+                        openPopup(templates.infoTemplate(data));
+                    })
+
+                //.hover(function () {
+                //    var group = $(this).closest('g');
+                //    group[0].setAttribute('class', 'route over');
+                //    $(routeGroup).append(group);
+                //})
+                //.mouseout(function () {
+                //    alert('here');
+                //    var group = $(this).closest('g');
+                //    //group[0].setAttribute('class', 'route');
+                //})
+                //.click(function () {
+                //    var group = $(this).closest('g');
+                //    var data = $(group).data('routeData');
+                //    openPopup(templates.infoTemplate(data));
+                //})
 
             }
 
@@ -270,11 +298,26 @@
                     TownNameSvg.setAttribute('font-size', 3 + e.size)
                     TownNameSvg.setAttribute('data-x', e.location.split(' ')[0])
                     TownNameSvg.setAttribute('data-y', e.location.split(' ')[1])
-                    var textNode = document.createTextNode(e.townName);
-                    TownNameSvg.appendChild(textNode);
-                    town.appendChild(TownNameSvg);
 
+                    //if (e.townName.indexOf("~") > -1) {
+                        var townLines = e.townName.split('~');
+                        for(i=0;i<townLines.length;i++) {
+                            var TSpanSvg = document.createElementNS(xmlns.ns, 'tspan');
+                            TSpanSvg.setAttribute('x', 0);
+                            TSpanSvg.setAttribute('dy', i*1 + 'em');
+                            var textNode = document.createTextNode(townLines[i]);
+                            TSpanSvg.appendChild(textNode);
+                            TownNameSvg.appendChild(TSpanSvg);
+                            town.appendChild(TownNameSvg);
+                        }
+                    //} else {
+                        
+                        //TownNameSvg.appendChild(textNode);
+                        //town.appendChild(TownNameSvg);
+                    //}
+                    
                     townGroup.appendChild(town);
+                    
 
                     //<circle fill="#AFAFAF" cx="2654.93" cy="5752.81" r="1.75"/>
                     //<text transform="matrix(1 0 0 1 2630.3809 5756.3867)" fill="#AFAFAF" font-family="'ArialMT'" font-size="6.0001">Holnest</text>
@@ -288,7 +331,7 @@
 
             var cubData = [
                 { "cubId": 1, "cityName": "Plymouth", "pdfUrl": "http://assets.goaheadbus.com/media/cms_page_media/678/AW%20310315%20DD%2015-024%20CITYBUS%20SHOP%20MAP%20MARCH%202015.pdf", "webSite":"https://www.plymouthbus.co.uk/timetables/", "twitter":"https://twitter.com/plymouthbus" },
-                { "cubId": 2, "cityName": "Exeter", "pdfUrl": "https://www.stagecoachbus.com/uploads/exetermap.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
+                { "cubId": 2, "cityName": "Exeter", "pdfUrl": "https://www.stagecoachbus.com/uploads/exetermapweb.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
                 { "cubId": 3, "cityName": "Torbay", "pdfUrl": "https://www.stagecoachbus.com/uploads/torbaymap.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
                 { "cubId": 4, "cityName": "Taunton", "pdfUrl": "http://www.busesofsomerset.co.uk/pdfs/maps/tauntonapr15.pdf", "webSite": "http://www.busesofsomerset.co.uk/timetables.shtml", "twitter": "https://twitter.com/FirstKernow" },
                 { "cubId": 5, "cityName": "Yoevil", "pdfUrl": "", "webSite": "", "twitter": "" },
@@ -306,7 +349,13 @@
                 { "cubId": 8, "number": "160", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20160.pdf" }
             ];
 
-       }())
+        }())
+
+        function frameLoaded() {
+            var parent = $(this).closest('.scroll')
+            $(this).show().css('opacity','1');
+            parent.find('.loading').hide();
+        }
 
     </script>
 
@@ -315,7 +364,7 @@
         <div class="scroll">
             {{#unless pdfUrl}}Sorry, no timetable for this area yet! :-({{/unless}}
             {{#if pdfUrl}}<span class="loading"></span>{{/if}}
-            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;"></iframe>
+            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
         </div>
     </script>
 
@@ -328,7 +377,7 @@
         <div class="scroll">
             {{#unless pdfUrl}}Sorry, no timetable for this area yet! :-({{/unless}}
             {{#if pdfUrl}}<span class="loading"></span>{{/if}}
-            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;"></iframe>
+            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
         </div>
     </script>
 
@@ -343,7 +392,7 @@
         <div class="scroll">
             {{#unless allStopsUrl}}Sorry, no timetable for this route yet! :-({{/unless}}
             {{#if allStopsUrl}}<span class="loading"></span>{{/if}}
-            <iframe src="{{timingPointsUrl}}" style="width:100%;height:100%;"></iframe>
+            <iframe src="{{timingPointsUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
         </div>
     </script>
 

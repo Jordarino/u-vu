@@ -1,6 +1,6 @@
 ﻿$.extend($.expr[":"], {
     "containsIN": function (elem, i, match, array) {
-        return (elem.textContent || elem.innerText || "").toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+        return (elem.textContent || elem.innerText || "").toLowerCase().indexOf((match[3] || "").toLowerCase()) == 0;
     }
 });
 
@@ -53,7 +53,7 @@ $(function () {
         }
     })
     $(document).click(function (e) {
-        console.log($(e.target).closest('.drop-menu'));
+        //console.log($(e.target).closest('.drop-menu'));
         if ($(e.target).closest('.drop-menu').length == 0) $('div.drop-menu').hide();
     });
 })
