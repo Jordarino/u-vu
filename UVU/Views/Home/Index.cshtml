@@ -26,7 +26,14 @@
         </li>
         <li><a>About Us</a></li>
         <li><a>Contact</a></li>
-        <li><a>Journey Planner</a></li>
+        <li>
+            <a class="drop-menu-button">Journey Planner</a>
+            <div class="drop-menu">
+                <input type="text" id="planFrom" /><br/>
+                <input type="text" id="planTo" /><br/>
+                <button id="btnGo">Go</button>
+            </div>
+        </li>
     </ul>
 </div>
 
@@ -58,7 +65,6 @@
                 infoPopup,
                 templates = {};
 
-
             var xmlns = {
                 ns: 'http://www.w3.org/2000/svg',
                 link: 'http://www.w3.org/1999/xlink'
@@ -74,9 +80,25 @@
                 templates.infoTemplate = Handlebars.compile($.trim($('#infoTemplate').html())); 
                 templates.cubInfoTemplate = Handlebars.compile($.trim($('#cubInfoTemplate').html())); 
                 templates.railInfoTemplate = Handlebars.compile($.trim($('#railInfoTemplate').html()));
+                templates.jouneyPlanTemplate = Handlebars.compile($.trim($('#jouneyPlanTemplate').html()));
                 $('#townSearch').keyup(searchTowns);
                 $('#results').on('click', 'div', function () { gotoTown($(this).data('node')); });
+                $('#btnGo').click(planJourney)
             }
+
+            var planJourney = function () {
+
+
+                var data = { to : $('#planTo').val(), from : $('#playFrom').val() }
+                var displayData = templates.jouneyPlanTemplate(data)
+                infoPopup.find('.mainInfo').html(displayData)
+                infoPopup.find('iframe').load(function () {
+                    infoPopup.find('iframe').show();
+                    infoPopup.find('.loading').hide();
+                })
+                infoPopup.showPopup();
+            }
+
 
             var searchTowns = function (e) {
                 var string = $(this).val();
@@ -232,6 +254,8 @@
                     .on('mouseenter', 'polyline, path, line, text', function () {
                         var group = $(this).closest('g');
                         group[0].setAttribute('class', 'route over');
+                        $(routeGroup).prepend(group.nextAll());
+                        //$(routeGroup).append(group);
                     })
                     .on('mouseleave', 'polyline, path, line, text', function () {
                         var group = $(this).closest('g');
@@ -396,4 +420,12 @@
         </div>
     </script>
 
+    <script type="text/x-handlebars" id="jouneyPlanTemplate">
+        <h1>Jouney Planner</h1>
+        <div class="scroll">
+            <span class="loading"></span>
+            <iframe src="https://www.google.com/maps/preview?saddr={{from}}&daddr={{to}}&dirflg=r&output=embed" style="width:100%;height:100%;position:relative;"></iframe>
+        </div>
+    </script>
+    
 }
