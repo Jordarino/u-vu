@@ -171,11 +171,13 @@
                 $('#Yellow_Cubs polygon, #Yellow_Cubs path').click(function () {
                     var id = $(this).data('id');
                     var cub = $.grep(cubData, function (e) { return e.cubId == id; });
+                    if (document.location.hostname == "localhost") cub[0].local = true;
                     openPopup(templates.cubInfoTemplate(cub[0]));
                 });
                 $('#Rail_Numbers text[data-number]').click(function() {
                     var number = $(this).data('number');
                     var rail = $.grep(railData, function (e) { return e.number == number; });
+                    if (document.location.hostname == "localhost") rail[0].local = true;
                     openPopup(templates.railInfoTemplate(rail[0]));
                 })
 
@@ -356,22 +358,22 @@
 
             var cubData = [
                 { "cubId": 1, "cityName": "Plymouth", "pdfUrl": "http://assets.goaheadbus.com/media/cms_page_media/678/AW%20310315%20DD%2015-024%20CITYBUS%20SHOP%20MAP%20MARCH%202015.pdf", "webSite":"https://www.plymouthbus.co.uk/timetables/", "twitter":"https://twitter.com/plymouthbus" },
-                { "cubId": 2, "cityName": "Exeter", "pdfUrl": "https://www.stagecoachbus.com/uploads/exetermapweb.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
-                { "cubId": 3, "cityName": "Torbay", "pdfUrl": "https://www.stagecoachbus.com/uploads/torbaymap.pdf", "webSite": "https://www.stagecoachbus.com/timetables.aspx", "twitter": "https://twitter.com/StagecoachSW" },
+                { "cubId": 2, "cityName": "Exeter", "pdfUrl": "/Content/cubs/cub2.pdf", "webSite": "https://www.stagecoachbus.com/maps?nearbyLocation%5BCategory%5D=locality&nearbyLocation%5BGeocode%5D%5BGrid%5D%5Bvalue%5D=WGS84&nearbyLocation%5BGeocode%5D%5BLongitude%5D=-3.5240284589035453&nearbyLocation%5BGeocode%5D%5BLatitude%5D=50.72574040905496&nearbyLocation%5BGeocode%5D%5Bcallback%5D=undefined&nearbyLocation%5BFullText%5D=Exeter+Bus+Station%2C+Devon&nearbyLocation%5BLocalityData%5D%5BLocalityId%5D=ZYX25629&nearbyLocation%5Bid%5D=Exeter+Bus+Station%2C+Devon", "twitter": "https://twitter.com/StagecoachSW" },
+                { "cubId": 3, "cityName": "Torbay", "pdfUrl": "/Content/cubs/cub3.pdf", "webSite": "https://www.stagecoachbus.com/maps?nearbyLocation%5BCategory%5D=locality&nearbyLocation%5BGeocode%5D%5BGrid%5D%5Bvalue%5D=WGS84&nearbyLocation%5BGeocode%5D%5BLongitude%5D=-3.527759490351937&nearbyLocation%5BGeocode%5D%5BLatitude%5D=50.46452081789005&nearbyLocation%5BGeocode%5D%5Bcallback%5D=undefined&nearbyLocation%5BFullText%5D=Torquay%2C+Torbay&nearbyLocation%5BLocalityData%5D%5BLocalityId%5D=ZYX12736&nearbyLocation%5Bid%5D=Torquay%2C+Torbay", "twitter": "https://twitter.com/StagecoachSW" },
                 { "cubId": 4, "cityName": "Taunton", "pdfUrl": "http://www.busesofsomerset.co.uk/pdfs/maps/tauntonapr15.pdf", "webSite": "http://www.busesofsomerset.co.uk/timetables.shtml", "twitter": "https://twitter.com/FirstKernow" },
                 { "cubId": 5, "cityName": "Yoevil", "pdfUrl": "", "webSite": "", "twitter": "" },
                 { "cubId": 6, "cityName": "Weymouth", "pdfUrl": "", "webSite": "", "twitter": "" },
             ];
 
             var railData = [
-                { "cubId": 1, "number": "135", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20135.pdf" },
-                { "cubId": 2, "number": "136", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20136.pdf" },
-                { "cubId": 3, "number": "139", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20139.pdf" },
-                { "cubId": 4, "number": "140", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20140.pdf" },
-                { "cubId": 5, "number": "142", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20142.pdf" },
-                { "cubId": 6, "number": "143", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20143.pdf" },
-                { "cubId": 7, "number": "144", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20144.pdf" },
-                { "cubId": 8, "number": "160", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20160.pdf" }
+                { "railId": 1, "number": "135", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20135.pdf" },
+                { "railId": 2, "number": "136", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20136.pdf" },
+                { "railId": 3, "number": "139", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20139.pdf" },
+                { "railId": 4, "number": "140", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20140.pdf" },
+                { "railId": 5, "number": "142", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20142.pdf" },
+                { "railId": 6, "number": "143", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20143.pdf" },
+                { "railId": 7, "number": "144", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20144.pdf" },
+                { "railId": 8, "number": "160", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20160.pdf" }
             ];
 
         }())
@@ -389,7 +391,11 @@
         <div class="scroll">
             {{#unless pdfUrl}}Sorry, no timetable for this area yet! :-({{/unless}}
             {{#if pdfUrl}}<span class="loading"></span>{{/if}}
-            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
+            {{#if local}}
+                <iframe src="/content/pdfs/rail/rail{{railId}}.pdf" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
+            {{else}}
+                <iframe src="{{pdfUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
+            {{/if}}
         </div>
     </script>
 
@@ -402,7 +408,11 @@
         <div class="scroll">
             {{#unless pdfUrl}}Sorry, no timetable for this area yet! :-({{/unless}}
             {{#if pdfUrl}}<span class="loading"></span>{{/if}}
-            <iframe src="{{pdfUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
+            {{#if local}}
+                <iframe src="/content/pdfs/cubs/cub{{cubId}}.pdf" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
+            {{else}}
+                <iframe src="{{pdfUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
+            {{/if}}
         </div>
     </script>
 
