@@ -21,6 +21,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <WebGreaseLibPath>..\packages\WebGrease.1.5.2\lib</WebGreaseLibPath>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -177,6 +178,17 @@
     <Content Include="Content\icons\website-icon.png" />
     <Content Include="Content\images\key.png" />
     <Content Include="Content\images\u-vu-lugu.png" />
+    <Content Include="Content\overview\855.png" />
+    <Content Include="Content\overview\856.png" />
+    <Content Include="Content\overview\857.png" />
+    <Content Include="Content\overview\858.png" />
+    <Content Include="Content\overview\859.png" />
+    <Content Include="Content\overview\860.png" />
+    <Content Include="Content\overview\861.png" />
+    <Content Include="Content\overview\862.png" />
+    <Content Include="Content\overview\865.png" />
+    <Content Include="Content\overview\866.png" />
+    <Content Include="Content\overview\867.png" />
     <Content Include="Content\Styles\Forms.css" />
     <Content Include="Content\Styles\Layout.css" />
     <Content Include="Content\Styles\Navigation.css" />
