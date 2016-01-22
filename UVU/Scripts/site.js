@@ -20,8 +20,12 @@
         var setHeight = function () {
             var popWidth = itm.outerHeight(); //.find('.popup-title').outerHeight() + itm.find('.popup-buttons').outerHeight() + itm.find('.popup-content')[0].scrollHeight + 10;
             var docWidth = $(window).width();
-            var docHeight = $(window).height();
-            itm.css({ 'width': docWidth-100, 'height' : docHeight - 100 });
+            var docHeight = $(window).height() - 100;
+
+            var windowWidth = docWidth > 1200 ? 1100 : docWidth - 100;
+            var windowHeight = docHeight > 900 ? 800 : docHeight - 100;
+
+            itm.css({ 'width': windowWidth, 'height': windowHeight, 'left': (docWidth - windowWidth) / 2, 'top': (docHeight - windowHeight) / 2 });
         }
 
         itm.find('.cancelPopup').click(function (e) {

@@ -39,7 +39,7 @@
 
 <div id="infoPopup">
     <div class="closeIcon"></div>
-    <div class="scroll mainInfo">
+    <div class="mainInfo">
 
     </div>
 </div>
@@ -87,8 +87,6 @@
             }
 
             var planJourney = function () {
-
-
                 var data = { to : $('#planTo').val(), from : $('#playFrom').val() }
                 var displayData = templates.jouneyPlanTemplate(data)
                 infoPopup.find('.mainInfo').html(displayData)
@@ -98,7 +96,6 @@
                 })
                 infoPopup.showPopup();
             }
-
 
             var searchTowns = function (e) {
                 var string = $(this).val();
@@ -266,25 +263,11 @@
                     .click(function () {
                         var group = $(this).closest('g');
                         var data = $(group).data('routeData');
+                        var routeItem = $.grep(routeData, function (e) { return e.routeId == data.routeId; });
+                        data.routeItem = routeItem[0];
                         if (document.location.hostname == "localhost") data.local = true;
                         openPopup(templates.infoTemplate(data));
                     })
-
-                //.hover(function () {
-                //    var group = $(this).closest('g');
-                //    group[0].setAttribute('class', 'route over');
-                //    $(routeGroup).append(group);
-                //})
-                //.mouseout(function () {
-                //    alert('here');
-                //    var group = $(this).closest('g');
-                //    //group[0].setAttribute('class', 'route');
-                //})
-                //.click(function () {
-                //    var group = $(this).closest('g');
-                //    var data = $(group).data('routeData');
-                //    openPopup(templates.infoTemplate(data));
-                //})
 
             }
 
@@ -296,15 +279,18 @@
                 })
                 infoPopup.showPopup();
 
-                infoPopup.find('.btnChange').click(function () {
-                    $(this).hide();
-                    if ($(this).hasClass('btnAll')) infoPopup.find('.btnMain').show();
-                    else infoPopup.find('.btnAll').show();
+                infoPopup.find('.btnOverView').click(function () {
+                    infoPopup.find('.sections').hide();
+                    infoPopup.find('#divOverview').show();
+                });
+                infoPopup.find('.btnAllStops, .btnTimingPoints').click(function () {
+                    infoPopup.find('.sections').hide();
+                    infoPopup.find('#divTimingPoints').show();
                     infoPopup.find('.loading').show();
                     infoPopup.find('iframe').hide();
-                    
                     infoPopup.find('iframe').attr('src', $(this).data('url'));
                 });
+                infoPopup.find('.btnBackToMap').click(function () { infoPopup.hide(); })
             }
 
             var drawTowns = function(data) {
@@ -376,13 +362,32 @@
                 { "railId": 8, "number": "160", "pdfUrl": "http://www.networkrail.co.uk/browse%20documents/eNRT/May15/timetables/Table%20160.pdf" }
             ];
 
+            var routeData = [
+                { "routeId": 854, "times": [["", "", "", "", ""], ["", "", "", "", ""]], "ns": false },
+                { "routeId": 855, "times": [["46", "60/120", "60/120", "~", "~"]], "ns": false },
+                { "routeId": 856, "times": [["11/11A", "30", "30", "120", "120*"], ["11A", "60", "60", "120", "~"]], "ns": true },
+                { "routeId": 857, "times": [["72", "120", "120", "~", "~"]], "ns": false },
+                { "routeId": 858, "times": [["73", "60", "60", "120", "~"]], "ns": false },
+                { "routeId": 859, "times": [["74", "120", "120", "~", "~"]], "ns": false },
+                { "routeId": 860, "times": [["79/79A", "60", "60", "~", "~"]], "ns": false },
+                { "routeId": 861, "times": [["12 Plymouth - Callington", "30", "30", "60", "120*"], ["12 Callington - Launceston", "60", "60", "120", "irregular*"], ["12 Launceston - Bude", "120", "120", "~", "~"]], "ns": true },
+                { "routeId": 862, "times": [["75/75A", "60", "60", "~", "~"], ["75A", "120", "120", "~", "~"]], "ns": false },
+                { "routeId": 863, "times": [["", "", "", "", ""], ["", "", "", "", ""]], "ns": false },	
+                { "routeId": 864, "times": [["", "", "", "", ""], ["", "", "", "", ""]], "ns": false },	
+                { "routeId": 865, "times": [["X10", "irregular", "irregular", "~", "~"]], "ns": false },
+                { "routeId": 866, "times": [["40 Bridport - Beaminster", "60", "60/120", "~", "~"], ["40 Beaminster - Yeovil", "irregular", "irregular", "~", "~"]], "ns": false },
+                { "routeId": 867, "times": [["20A", "60", "60", "~", "~"]], "ns": false }
+            ];
         }())
 
         function frameLoaded() {
-            var parent = $(this).closest('.scroll')
-            $(this).show().css('opacity','1');
+            var parent = $(this).closest('.scroll');
+            $(this).show().css('opacity', '1');
             parent.find('.loading').hide();
         }
+
+
+
 
     </script>
 
@@ -419,24 +424,62 @@
     <script type="text/x-handlebars" id="infoTemplate">
         <h1>{{operatorItem.name}}</h1> 
         
-        <div {{bindData this}} class="buttonBar">
-            {{#if local}}
-                <a data-url="/content/pdfs/{{routeId}}_0.pdf" class="button btnChange btnAll">All Stops</a>
-                <a data-url="/content/pdfs/{{routeId}}_1.pdf" class="button btnChange btnMain" style="display:none;">Main Stops</a>
-            {{else}}
-                <a data-url="{{allStopsUrl}}" class="button btnChange btnAll">All Stops</a> 
-                <a data-url="{{timingPointsUrl}}" class="button btnChange btnMain" style="display:none;">Main Stops</a>
-            {{/if}}
-            {{#if operatorItem.twitter}}<a href="{{operatorItem.twitter}}" target="_blank" class="button"><img src="/Content/icons/twitter-icon.png"></a>{{/if}}
-        </div>
         <div class="scroll">
-            {{#unless allStopsUrl}}Sorry, no timetable for this route yet! :-({{/unless}}
-            {{#if allStopsUrl}}<span class="loading"></span>{{/if}}
-            {{#if local}}
+            <div id="divOverview" class="sections">
+                <div style="text-align:center;background:#E9E8E8;">
+                    <img src="/Content/overview/{{routeId}}.png" style="max-width:530px;width:100%;" />
+                </div>
+                <h2 style="background:#E9E8E8;border:2px solid #9ABDE3;padding:2px;margin:5px 0;text-align:center;color:#000;font-size:16px;">Daytime frequency in minutes</h2>
+
+                <div style="background:#99BDE2;color:#000;padding:20px;position: absolute;top: 240px;bottom:0;">
+                    <table class="routeTimes">
+                        <tr>
+                            <th>&nbsp;</th>
+                            <th>Monday to Friday</th>
+                            <th>Saturday</th>
+                            <th>Sunday</th>
+                            <th>Evening Service</th>
+                        </tr>
+                        {{#each routeItem.times}}
+                        <tr>
+                            {{#each this}}
+                                <td>{{this}}</td>
+                            {{/each}}
+                        </tr>
+                        {{/each}}
+                    </table>
+                    {{#if routeItem.ns}}<p>* No evening service on Sundays</p>{{/if}}
+                    <p><strong>NOTES:</strong> Blue figures show typical off-peak journey times; journey times in peak hours are likely to be longer and in the evenings and on Sunday, shorter.  Evening service is generally from around 18.30.</p>
+                </div>
+
+            </div>
+            <div id="divTimingPoints" class="sections" style="display:none;height:100%;">
+                {{#unless allStopsUrl}}Sorry, no timetable for this route yet! :-({{/unless}}
+                {{#if allStopsUrl}}<span class="loading"></span>{{/if}}
+                {{#if local}}
                 <iframe src="/content/pdfs/{{routeId}}_1.pdf" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
-            {{else}}
+                {{else}}
                 <iframe src="{{timingPointsUrl}}" style="width:100%;height:100%;position:relative;" onload="frameLoaded();"></iframe>
-            {{/if}}
+                {{/if}}
+            </div>
+        </div>
+
+        <div {{bindData this}} class="buttonBar">
+            <ul>
+                <li><a class="button btnOverView">Overview</a></li>
+                {{#if local}}
+                <li><a data-url="/content/pdfs/{{routeId}}_1.pdf" class="button btnTimingPoints">Timetable</a></li>
+                <li><a data-url="/content/pdfs/{{routeId}}_0.pdf" class="button btnAllStops">All Stops</a></li>
+                {{else}}
+                <li><a data-url="{{timingPointsUrl}}" class="button btnTimingPoints">Timetable</a></li>
+                <li><a data-url="{{allStopsUrl}}" class="button btnAllStops">All Stops</a></li>
+                {{/if}}
+                <li><a class="button btnJourneyPlanner">Journey Planner</a></li>
+                {{#if operatorItem.twitter}}
+                <li><a href="{{operatorItem.twitter}}" target="_blank" class="button"><img src="/Content/icons/twitter-icon.png">Real Time</a></li>
+                {{/if}}
+                <li><a class="button btnBackToMap">Back to Map</a></li>
+            </ul>
         </div>
     </script>
 

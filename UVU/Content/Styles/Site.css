@@ -43,6 +43,9 @@ h1 {
     font-weight: 600;
 }
 
+
+
+
 #infoPopup {
     background-image: linear-gradient(#454a5f 0%, #1f222c 100%);
     border-radius: 5px;
@@ -54,15 +57,19 @@ h1 {
     top:50px;
     left:50px;
 }
+
 #infoPopup div.scroll {
     bottom: 20px;
     left: 20px;
+    right:250px;
     position: absolute;
-    right: 20px;
-    top: 40px;
+    top: 60px;
 }
+
+
 #infoPopup h1 {
     text-align:center;
+    padding-top:20px;
 }
 
 #infoPopup .closeIcon {
@@ -76,15 +83,33 @@ h1 {
 }
 #infoPopup .buttonBar {
     position:absolute;
-    left:20px;
-    top:0;
+    right:20px;
+    top:60px;
+    width:220px;
 }
 #infoPopup .buttonBar .button {
     vertical-align:middle;
+    width: 100%;
+    text-align: center;
+    padding:0;
+    margin-bottom:10px;
 }
+
 #infoPopup iframe {
     border:none;
 }
+
+.routeTimes {
+    width:100%;
+}
+.routeTimes th {
+    text-align:center;
+    font-weight:bold;
+}
+.routeTimes td {
+    text-align:center;
+}
+
 .loading { 
     background:url(/Content/icons/ajax-loader.gif) center center no-repeat;
     display:inline-block;
